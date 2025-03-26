@@ -85,7 +85,7 @@ lib/
 │   └── user.dart
 ├── screens/
 │   └── login/
-│       ├── bloc/
+│       ├── cubit/
 │       │   ├── login_cubit.dart
 │       │   └── login_cubit_state.dart
 │       ├── login_screen.dart

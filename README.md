@@ -1,5 +1,8 @@
 # Flart - Flutter Artifact Generator
 
+[![Release](https://img.shields.io/github/v/release/frankmungnodev/flart?include_prereleases&style=flat-square)](https://github.com/frankmungnodev/flart/releases)
+[![License](https://img.shields.io/github/license/frankmungnodev/flart?style=flat-square)](LICENSE)
+
 A command-line tool to streamline Flutter development by generating models, screens, and managing build runner tasks.
 
 ## Features

@@ -1,5 +1,3 @@
-
-```
 # Flart - Flutter Artifact Generator
 
 A command-line tool to streamline Flutter development by generating models, screens, and managing build runner tasks.

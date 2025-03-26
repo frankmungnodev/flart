@@ -21,7 +21,7 @@ A command-line tool to streamline Flutter development by generating models, scre
 ## Installation
 
 ```bash
-go install github.com/yourusername/flart@latest
+go install github.com/frankmungnodev/flart@latest
 ```
 
 ## Configuration
@@ -97,25 +97,25 @@ lib/
 ### Latest Release
 v0.1.0 - Initial Release
 
-[View all releases](https://github.com/yourusername/flart/releases)
+[View all releases](https://github.com/frankmungnodev/flart/releases)
 
 ### Installation from Binary
 
 macOS (Apple Silicon):
 ```bash
-curl -L https://github.com/yourusername/flart/releases/download/v0.1.0/flart_0.1.0_darwin_arm64.tar.gz | tar xz
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.0/flart_0.1.0_darwin_arm64.tar.gz | tar xz
 sudo mv flart_0.1.0_darwin_arm64 /usr/local/bin/flart
 ```
 
 macOS (Intel):
 ```bash
-curl -L https://github.com/yourusername/flart/releases/download/v0.1.0/flart_0.1.0_darwin_amd64.tar.gz | tar xz
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.0/flart_0.1.0_darwin_amd64.tar.gz | tar xz
 sudo mv flart_0.1.0_darwin_amd64 /usr/local/bin/flart
 ```
 
 Linux:
 ```bash
-curl -L https://github.com/yourusername/flart/releases/download/v0.1.0/flart_0.1.0_linux_amd64.tar.gz | tar xz
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.0/flart_0.1.0_linux_amd64.tar.gz | tar xz
 sudo mv flart_0.1.0_linux_amd64 /usr/local/bin/flart
 ```
 

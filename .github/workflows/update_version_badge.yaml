@@ -1,0 +1,30 @@
+name: Update Version Badge
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  update-version-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get app version
+        id: appversion
+        run: |
+          VERSION=$(grep 'Version =' internal/version/version.go | cut -d '"' -f 2)
+          echo "value=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Update version badge JSON gist
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: d5877c86cd581fe08db77ebf0623c409
+          filename: flart_version.json
+          label: Version
+          message: ${{ steps.appversion.outputs.value }}
+          color: blue
+          namedLogo: go
+          forceUpdate: true

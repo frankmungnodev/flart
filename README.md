@@ -20,12 +20,6 @@ A command-line tool to streamline Flutter development by generating models, scre
   - Watch mode
   - Automatic conflict resolution
 
-## Installation
-
-```bash
-go install github.com/frankmungnodev/flart@latest
-```
-
 ## Configuration
 
 Create a `flart_config.json` file in your project root. This is optional.

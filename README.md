@@ -14,7 +14,6 @@ A command-line tool to streamline Flutter development by generating models, scre
 - 📱 Generate Screens
   - BLoC/Cubit support
   - Freezed state management
-  - Test file scaffolding
 
 - 🔄 Build Runner Management
   - One-time build

@@ -21,13 +21,22 @@ func CreateModel(modelName string) error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 
+	useFreezed :=false
+	if(cfg.Models != nil && cfg.Models.UseFreezed != nil){
+		useFreezed = *cfg.Models.UseFreezed;
+	}
+
+	projectDir := "."
+	if(cfg.ProjectDir != nil){
+		projectDir = *cfg.ProjectDir
+	}
 	// Convert model name to proper case
 	caser := cases.Title(language.English)
 	modelName = caser.String(modelName)
 
 	// Check if files already exist
-	modelDir := filepath.Join(*cfg.ProjectDir, "lib/models")
-	testDir := filepath.Join(*cfg.ProjectDir, "test/models")
+	modelDir := filepath.Join(projectDir, "lib/models")
+	testDir := filepath.Join(projectDir, "test/models")
 
 	modelFile := filepath.Join(modelDir, strings.ToLower(modelName)+".dart")
 	testFile := filepath.Join(testDir, strings.ToLower(modelName)+"_test.dart")
@@ -55,20 +64,20 @@ func CreateModel(modelName string) error {
 	}
 
 	// Add required dependencies
-	if err := utils.AddDependency("equatable", *cfg.ProjectDir); err != nil {
+	if err := utils.AddDependency("equatable", projectDir); err != nil {
 		return fmt.Errorf("failed to add equatable dependency: %w", err)
 	}
 
 	// Add Freezed dependencies if enabled
-	if *cfg.Models.UseFreezed {
-		if err := utils.AddFreezedDependencies(*cfg.ProjectDir); err != nil {
+	if useFreezed {
+		if err := utils.AddFreezedDependencies(projectDir); err != nil {
 			return err
 		}
 	}
 
 	// Create directory structure
-	modelDir = filepath.Join(*cfg.ProjectDir, "lib/models")
-	testDir = filepath.Join(*cfg.ProjectDir, "test/models")
+	modelDir = filepath.Join(projectDir, "lib/models")
+	testDir = filepath.Join(projectDir, "test/models")
 
 	dirs := []string{modelDir, testDir}
 	for _, dir := range dirs {
@@ -79,8 +88,8 @@ func CreateModel(modelName string) error {
 
 	// Create files with templates
 	files := map[string]string{
-		filepath.Join(modelDir, strings.ToLower(modelName)+".dart"):     templates.GenerateModel(modelName, *cfg.Models.UseFreezed),
-		filepath.Join(testDir, strings.ToLower(modelName)+"_test.dart"): templates.GenerateModelTest(modelName, *cfg.Models.UseFreezed, *cfg.ProjectDir),
+		filepath.Join(modelDir, strings.ToLower(modelName)+".dart"):     templates.GenerateModel(modelName, useFreezed),
+		filepath.Join(testDir, strings.ToLower(modelName)+"_test.dart"): templates.GenerateModelTest(modelName, useFreezed, projectDir),
 	}
 
 	for filePath, content := range files {
@@ -90,16 +99,16 @@ func CreateModel(modelName string) error {
 
 		// Format the created file using dart format
 		cmd := exec.Command("dart", "format", filePath)
-		cmd.Dir = *cfg.ProjectDir
+		cmd.Dir = projectDir
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to format file %s: %w", filePath, err)
 		}
 	}
 
 	// Run build_runner if freezed is enabled
-	if *cfg.Models.UseFreezed {
+	if useFreezed {
 		cmd := exec.Command("dart", "run", "build_runner", "build", "--delete-conflicting-outputs")
-		cmd.Dir = *cfg.ProjectDir
+		cmd.Dir = projectDir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {

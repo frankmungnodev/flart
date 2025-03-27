@@ -39,8 +39,10 @@ func CreateModel(modelName string) error {
 	modelDir := filepath.Join(projectDir, "lib", "models")
 	testDir := filepath.Join(projectDir, "test", "models")
 
-	modelFile := filepath.Join(modelDir, strings.ToLower(modelName)+".dart")
-	testFile := filepath.Join(testDir, strings.ToLower(modelName)+"_test.dart")
+	// Convert to snake case for file names
+	snakeCase := utils.ToSnakeCase(modelName)
+	modelFile := filepath.Join(modelDir, snakeCase+".dart")
+	testFile := filepath.Join(testDir, snakeCase+"_test.dart")
 
 	// Check existing files with user confirmation
 	existingFiles := []string{}

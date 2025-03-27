@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"flart/internal/commands"
 	"flart/internal/config"
+	"flart/internal/version"
 	"fmt"
 	"os"
 	"os/exec"
@@ -22,19 +24,39 @@ const (
 )
 
 func main() {
-	if err := run(); err != nil {
+	// Define version flag
+	versionFlag := flag.Bool("v", false, "Show version information")
+	versionLongFlag := flag.Bool("version", false, "Show version information")
+
+	// Parse flags before other logic
+	flag.Parse()
+
+	// Check version flags first
+	if *versionFlag || *versionLongFlag {
+		fmt.Printf("Flart version %s\n", version.Version)
+		os.Exit(0)
+	}
+
+	// Get remaining arguments after flag parsing
+	args := flag.Args()
+
+	if err := run(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	if len(os.Args) > 2 {
-		return handleMakeCommand(os.Args[1], os.Args[2])
-	} else if len(os.Args) > 1 {
-		return handleBuildCommand(os.Args[1])
+func run(args []string) error {
+	switch len(args) {
+	case 2:
+		return handleMakeCommand(args[0], args[1])
+	case 1:
+		return handleBuildCommand(args[0])
+	case 0:
+		return handleInteractive()
+	default:
+		return fmt.Errorf("too many arguments")
 	}
-	return handleInteractive()
 }
 
 func handleBuildCommand(command string) error {

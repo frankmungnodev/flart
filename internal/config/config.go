@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,94 +24,96 @@ type Config struct {
 	Screens    *ScreenConfig `json:"screens"`
 }
 
+// configFileName is consistent across save and load operations
+const configFileName = "flart_config.json"
+
 func Load() (*Config, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+	// Create a default config with explicit default values
+	cfg := &Config{
+		ProjectDir: new(string),
+		Models: &ModelConfig{
+			UseFreezed: new(bool),
+		},
+		Screens: &ScreenConfig{
+			UseCubit:   new(bool),
+			UseFreezed: new(bool),
+		},
 	}
 
-	configPath := filepath.Join(home, "Projects", "flart", "flart_config.json")
+	// Set default values explicitly
+	*cfg.ProjectDir = "."
+	*cfg.Models.UseFreezed = false
+	*cfg.Screens.UseCubit = false
+	*cfg.Screens.UseFreezed = false
+
+	// Determine the config file path
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	configPath := filepath.Join(currentDir, configFileName)
+
+	// Check if config file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.Printf("Config file not found at %s, using defaults", configPath)
+		return cfg, nil
+	}
+
+	// Read config file
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get current directory: %w", err)
+		return nil, fmt.Errorf("failed to read config file %s: %w", configPath, err)
+	}
+
+	// Unmarshal config
+	if err := json.Unmarshal(data, cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config file %s: %w", configPath, err)
+	}
+
+	// Resolve project directory
+	if cfg.ProjectDir != nil {
+		// Handle home directory expansion
+		if strings.HasPrefix(*cfg.ProjectDir, "~/") {
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get home directory: %w", err)
+			}
+			*cfg.ProjectDir = filepath.Join(homeDir, (*cfg.ProjectDir)[2:])
 		}
-		return &Config{ProjectDir: &currentDir}, nil
-	}
 
-	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse config file: %w", err)
-	}
-
-	if config.ProjectDir != nil && (*config.ProjectDir)[0] == '~' {
-		*config.ProjectDir = filepath.Join(home, (*config.ProjectDir)[1:])
-	}
-
-	// Set default project directory if not specified
-	if config.ProjectDir == nil {
-		currentDir, err := os.Getwd()
+		// Convert to absolute path
+		absPath, err := filepath.Abs(*cfg.ProjectDir)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get current directory: %w", err)
+			return nil, fmt.Errorf("failed to resolve project directory: %w", err)
 		}
-		config.ProjectDir = &currentDir
+		*cfg.ProjectDir = absPath
 	}
 
-	// Handle tilde in project directory path
-	if strings.HasPrefix(*config.ProjectDir, "~") {
-		expandedPath := filepath.Join(home, (*config.ProjectDir)[1:])
-		config.ProjectDir = &expandedPath
-	}
-
-	// Convert to absolute path
-	absPath, err := filepath.Abs(*config.ProjectDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute path: %w", err)
-	}
-	config.ProjectDir = &absPath
-
-	// Check if directory exists
-	if _, err := os.Stat(*config.ProjectDir); os.IsNotExist(err) {
-		return nil, fmt.Errorf("project directory does not exist: %s", *config.ProjectDir)
-	}
-
-	// Initialize configs if nil
-	if config.Models == nil {
-		config.Models = &ModelConfig{}
-	}
-	if config.Screens == nil {
-		config.Screens = &ScreenConfig{}
-	}
-
-	// Set default model config
-	if config.Models.UseFreezed == nil {
-		defaultVal := false
-		config.Models.UseFreezed = &defaultVal
-	}
-
-	// Set default screen config
-	if config.Screens.UseCubit == nil {
-		defaultVal := false
-		config.Screens.UseCubit = &defaultVal
-	}
-	if config.Screens.UseFreezed == nil {
-		defaultVal := false
-		config.Screens.UseFreezed = &defaultVal
-	}
-
-	return &config, nil
+	return cfg, nil
 }
 
 func Save(cfg *Config) error {
+	// Ensure the config directory exists
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	configPath := filepath.Join(currentDir, configFileName)
+
+	// Marshal config with indentation
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	if err := os.WriteFile("flutter_artisan_config.json", data, 0644); err != nil {
-		return fmt.Errorf("failed to write config file: %w", err)
+	// Write config file with more permissive permissions
+	// 0644 allows read/write for owner, read for others
+	if err := os.WriteFile(configPath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write config file %s: %w", configPath, err)
 	}
 
+	log.Printf("Config saved to %s", configPath)
 	return nil
 }

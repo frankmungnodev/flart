@@ -9,106 +9,138 @@ import (
 )
 
 type ModelConfig struct {
-	UseFreezed *bool `json:"useFreezed"`
+	UseFreezed bool `json:"useFreezed"`
 }
 
 type ScreenConfig struct {
-	UseCubit   *bool `json:"useCubit"`
-	UseFreezed *bool `json:"useFreezed"`
+	UseCubit   bool `json:"useCubit"`
+	UseFreezed bool `json:"useFreezed"`
 }
 
 type Config struct {
-	ProjectDir *string       `json:"projectDir"`
-	Models     *ModelConfig  `json:"models"`
-	Screens    *ScreenConfig `json:"screens"`
+	ProjectDir string       `json:"projectDir"`
+	Models     ModelConfig  `json:"models"`
+	Screens    ScreenConfig `json:"screens"`
 }
 
+const (
+	configFileName = "flart_config.json"
+	defaultUseFreezed = false
+	defaultUseCubit = false
+)
+
 func Load() (*Config, error) {
-	home, err := os.UserHomeDir()
+	cfg, err := loadConfigFromFile()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return createDefaultConfig()
+		}
+		return nil, fmt.Errorf("config loading failed: %w", err)
+	}
+
+	if err := validateAndSanitizeConfig(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func loadConfigFromFile() (*Config, error) {
+	configPath, err := getConfigPath()
 	if err != nil {
 		return nil, err
 	}
 
-	configPath := filepath.Join(home, "Projects", "flart", "flart_config.json")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get current directory: %w", err)
-		}
-		return &Config{ProjectDir: &currentDir}, nil
+		return nil, err
 	}
 
-	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse config file: %w", err)
+	var cfg Config
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("invalid config format: %w", err)
 	}
 
-	if config.ProjectDir != nil && (*config.ProjectDir)[0] == '~' {
-		*config.ProjectDir = filepath.Join(home, (*config.ProjectDir)[1:])
-	}
+	return &cfg, nil
+}
 
-	// Set default project directory if not specified
-	if config.ProjectDir == nil {
-		currentDir, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get current directory: %w", err)
-		}
-		config.ProjectDir = &currentDir
-	}
-
-	// Handle tilde in project directory path
-	if strings.HasPrefix(*config.ProjectDir, "~") {
-		expandedPath := filepath.Join(home, (*config.ProjectDir)[1:])
-		config.ProjectDir = &expandedPath
-	}
-
-	// Convert to absolute path
-	absPath, err := filepath.Abs(*config.ProjectDir)
+func getConfigPath() (string, error) {
+	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get absolute path: %w", err)
+		return "", fmt.Errorf("failed to get config directory: %w", err)
 	}
-	config.ProjectDir = &absPath
+	return filepath.Join(configDir, "flart", configFileName), nil
+}
 
-	// Check if directory exists
-	if _, err := os.Stat(*config.ProjectDir); os.IsNotExist(err) {
-		return nil, fmt.Errorf("project directory does not exist: %s", *config.ProjectDir)
-	}
-
-	// Initialize configs if nil
-	if config.Models == nil {
-		config.Models = &ModelConfig{}
-	}
-	if config.Screens == nil {
-		config.Screens = &ScreenConfig{}
+func createDefaultConfig() (*Config, error) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current directory: %w", err)
 	}
 
-	// Set default model config
-	if config.Models.UseFreezed == nil {
-		defaultVal := false
-		config.Models.UseFreezed = &defaultVal
+	return &Config{
+		ProjectDir: currentDir,
+		Models:     ModelConfig{UseFreezed: defaultUseFreezed},
+		Screens:    ScreenConfig{
+			UseCubit:   defaultUseCubit,
+			UseFreezed: defaultUseFreezed,
+		},
+	}, nil
+}
+
+func validateAndSanitizeConfig(cfg *Config) error {
+	// Expand tilde and relative paths
+	expandedPath, err := expandPath(cfg.ProjectDir)
+	if err != nil {
+		return fmt.Errorf("invalid project directory: %w", err)
+	}
+	cfg.ProjectDir = expandedPath
+
+	// Verify directory exists
+	if _, err := os.Stat(cfg.ProjectDir); err != nil {
+		return fmt.Errorf("project directory validation failed: %w", err)
 	}
 
-	// Set default screen config
-	if config.Screens.UseCubit == nil {
-		defaultVal := false
-		config.Screens.UseCubit = &defaultVal
-	}
-	if config.Screens.UseFreezed == nil {
-		defaultVal := false
-		config.Screens.UseFreezed = &defaultVal
+	return nil
+}
+
+func expandPath(path string) (string, error) {
+	if strings.HasPrefix(path, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		path = filepath.Join(home, path[1:])
 	}
 
-	return &config, nil
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("path resolution failed: %w", err)
+	}
+
+	return absPath, nil
 }
 
 func Save(cfg *Config) error {
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal config: %w", err)
+	if err := validateAndSanitizeConfig(cfg); err != nil {
+		return fmt.Errorf("cannot save invalid config: %w", err)
 	}
 
-	if err := os.WriteFile("flutter_artisan_config.json", data, 0644); err != nil {
+	configPath, err := getConfigPath()
+	if err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return fmt.Errorf("config serialization failed: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	if err := os.WriteFile(configPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 

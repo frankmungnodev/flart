@@ -27,15 +27,15 @@ func CreateScreen(screenName string) error {
 	}
 
 	// Add Freezed dependencies if enabled
-	if *cfg.Screens.UseFreezed {
-		if err := utils.AddFreezedDependencies(*cfg.ProjectDir); err != nil {
+	if cfg.Screens.UseFreezed {
+		if err := utils.AddFreezedDependencies(cfg.ProjectDir); err != nil {
 			return err
 		}
 	}
 
 	// Add dependencies
 	for _, dep := range dependencies {
-		if err := utils.AddDependency(dep, *cfg.ProjectDir); err != nil {
+		if err := utils.AddDependency(dep, cfg.ProjectDir); err != nil {
 			return fmt.Errorf("failed to add dependency %s: %w", dep, err)
 		}
 	}
@@ -45,9 +45,9 @@ func CreateScreen(screenName string) error {
 	screenName = caser.String(screenName)
 
 	// Create directory structure
-	screenDir := filepath.Join(*cfg.ProjectDir, "lib/screens", strings.ToLower(screenName))
+	screenDir := filepath.Join(cfg.ProjectDir, "lib/screens", strings.ToLower(screenName))
 	var stateDir string
-	if *cfg.Screens.UseCubit {
+	if cfg.Screens.UseCubit {
 		stateDir = filepath.Join(screenDir, "cubit")
 	} else {
 		stateDir = filepath.Join(screenDir, "bloc")
@@ -62,18 +62,18 @@ func CreateScreen(screenName string) error {
 
 	// Create files with templates
 	var files map[string]string
-	if *cfg.Screens.UseCubit {
+	if cfg.Screens.UseCubit {
 		files = map[string]string{
 			filepath.Join(screenDir, strings.ToLower(screenName)+"_screen.dart"): templates.GenerateScreen(screenName, true),
 			filepath.Join(stateDir, strings.ToLower(screenName)+"_cubit.dart"):   templates.GenerateCubit(screenName),
-			filepath.Join(stateDir, strings.ToLower(screenName)+"_state.dart"):   templates.GenerateState(screenName, true, *cfg.Screens.UseFreezed),
+			filepath.Join(stateDir, strings.ToLower(screenName)+"_state.dart"):   templates.GenerateState(screenName, true, cfg.Screens.UseFreezed),
 		}
 	} else {
 		files = map[string]string{
 			filepath.Join(screenDir, strings.ToLower(screenName)+"_screen.dart"): templates.GenerateScreen(screenName, false),
 			filepath.Join(stateDir, strings.ToLower(screenName)+"_bloc.dart"):    templates.GenerateBloc(screenName),
 			filepath.Join(stateDir, strings.ToLower(screenName)+"_event.dart"):   templates.GenerateEvent(screenName),
-			filepath.Join(stateDir, strings.ToLower(screenName)+"_state.dart"):   templates.GenerateState(screenName, false, *cfg.Screens.UseFreezed),
+			filepath.Join(stateDir, strings.ToLower(screenName)+"_state.dart"):   templates.GenerateState(screenName, false, cfg.Screens.UseFreezed),
 		}
 	}
 
@@ -84,16 +84,16 @@ func CreateScreen(screenName string) error {
 
 		// Format the created file using dart format
 		cmd := exec.Command("dart", "format", filePath)
-		cmd.Dir = *cfg.ProjectDir
+		cmd.Dir = cfg.ProjectDir
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to format file %s: %w", filePath, err)
 		}
 	}
 
 	// Run build_runner if freezed is enabled
-	if *cfg.Screens.UseFreezed {
+	if cfg.Screens.UseFreezed {
 		cmd := exec.Command("dart", "run", "build_runner", "build", "--delete-conflicting-outputs")
-		cmd.Dir = *cfg.ProjectDir
+		cmd.Dir = cfg.ProjectDir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {

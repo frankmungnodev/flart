@@ -45,9 +45,9 @@ func handleBuildCommand(command string) error {
 
 	switch command {
 	case cmdBuildRunnerCL:
-		return runBuildRunner(*cfg.ProjectDir, false)
+		return runBuildRunner(cfg.ProjectDir, false)
 	case cmdWatchRunnerCL:
-		return runBuildRunner(*cfg.ProjectDir, true)
+		return runBuildRunner(cfg.ProjectDir, true)
 	default:
 		return fmt.Errorf("unknown command: %s", command)
 	}
@@ -128,14 +128,14 @@ func handleInteractive() error {
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
-		return runBuildRunner(*cfg.ProjectDir, false)
+		return runBuildRunner(cfg.ProjectDir, false)
 
 	case cmdWatchRunner:
 		cfg, err := config.Load()
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
-		return runBuildRunner(*cfg.ProjectDir, true)
+		return runBuildRunner(cfg.ProjectDir, true)
 	}
 
 	return nil

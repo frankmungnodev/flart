@@ -91,7 +91,7 @@ lib/
 ## Releases
 
 ### Latest Release
-v0.1.1 - Initial Release
+v0.1.2 - Add Version Check Flag
 
 [View all releases](https://github.com/frankmungnodev/flart/releases)
 
@@ -99,24 +99,24 @@ v0.1.1 - Initial Release
 
 macOS (Apple Silicon):
 ```bash
-curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.1/flart_0.1.1_darwin_arm64.tar.gz | tar xz
-sudo mv flart_0.1.1_darwin_arm64 /usr/local/bin/flart
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.2/flart_0.1.2_darwin_arm64.tar.gz | tar xz
+sudo mv flart_0.1.2_darwin_arm64 /usr/local/bin/flart
 ```
 
 macOS (Intel):
 ```bash
-curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.1/flart_0.1.1_darwin_amd64.tar.gz | tar xz
-sudo mv flart_0.1.1_darwin_amd64 /usr/local/bin/flart
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.2/flart_0.1.2_darwin_amd64.tar.gz | tar xz
+sudo mv flart_0.1.2_darwin_amd64 /usr/local/bin/flart
 ```
 
 Linux:
 ```bash
-curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.1/flart_0.1.1_linux_amd64.tar.gz | tar xz
-sudo mv flart_0.1.1_linux_amd64 /usr/local/bin/flart
+curl -L https://github.com/frankmungnodev/flart/releases/download/v0.1.2/flart_0.1.2_linux_amd64.tar.gz | tar xz
+sudo mv flart_0.1.2_linux_amd64 /usr/local/bin/flart
 ```
 
 Windows:
-Download and extract `flart_0.1.1_windows_amd64.zip` and add to your PATH.
+Download and extract `flart_0.1.2_windows_amd64.zip` and add to your PATH.
 
 ## Contributing
 

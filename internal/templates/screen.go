@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"flart/internal/utils"
 	"fmt"
 	"strings"
 )
@@ -45,7 +46,7 @@ class _%[2]sViewState extends State<%[2]sView> {
       ),
     );
   }
-}`, strings.ToLower(screenName), screenName)
+}`, utils.ToSnakeCase(screenName), screenName)
 	}
 	return fmt.Sprintf(`import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -85,7 +86,7 @@ class _%[2]sViewState extends State<%[2]sView> {
       ),
     );
   }
-}`, strings.ToLower(screenName), screenName)
+}`, utils.ToSnakeCase(screenName), screenName)
 }
 
 // GenerateBloc creates a BLoC template with initial setup
@@ -106,7 +107,7 @@ class %[2]sBloc extends Bloc<%[2]sEvent, %[2]sState> {
   ) async {
     // TODO: Add your logic here
   }
-}`, strings.ToLower(screenName), screenName)
+}`, utils.ToSnakeCase(screenName), screenName)
 }
 
 // GenerateCubit creates a Cubit template with initial setup
@@ -121,7 +122,7 @@ class %[2]sCubit extends Cubit<%[2]sState> {
   Future<void> init() async {
     // TODO: Add your logic here
   }
-}`, strings.ToLower(screenName), screenName)
+}`, utils.ToSnakeCase(screenName), screenName)
 }
 
 // GenerateEvent creates event classes for the BLoC
@@ -186,5 +187,5 @@ class %[2]sState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
     );
   }
-}`, strings.ToLower(screenName), screenName, parentFile)
+}`, utils.ToSnakeCase(screenName), screenName, parentFile)
 }

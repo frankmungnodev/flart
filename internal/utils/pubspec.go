@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 type dependencyType string
@@ -62,4 +64,21 @@ func AddFreezedDependencies(projectDir string) error {
 	}
 
 	return nil
+}
+
+func GetFlutterPackageName(projectDir string) (string, error) {
+	pubspecPath := filepath.Join(projectDir, "pubspec.yaml")
+	content, err := os.ReadFile(pubspecPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read pubspec.yaml: %w", err)
+	}
+
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "name:") {
+			return strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "name:")), nil
+		}
+	}
+
+	return "", fmt.Errorf("package name not found in pubspec.yaml")
 }

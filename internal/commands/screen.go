@@ -85,6 +85,12 @@ func CreateScreen(screenName string) error {
 		}
 	}
 
+	// Update barrel file
+	screenBaseDir := filepath.Join(*cfg.ProjectDir, "lib/screens")
+	if err := utils.UpdateScreenBarrelFile(screenBaseDir, screenName, "screens.dart"); err != nil {
+		return fmt.Errorf("failed to update barrel file: %w", err)
+	}
+
 	// Run build_runner if freezed is enabled
 	if *cfg.Screens.UseFreezed {
 		cmd := exec.Command("dart", "run", "build_runner", "build", "--delete-conflicting-outputs")

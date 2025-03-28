@@ -109,6 +109,11 @@ func CreateModel(modelName string) error {
 		}
 	}
 
+	// Update barrel file
+	if err := utils.UpdateBarrelFile(modelDir, modelName, "models.dart"); err != nil {
+		return fmt.Errorf("failed to update barrel file: %w", err)
+	}
+
 	return nil
 }
 

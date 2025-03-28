@@ -8,6 +8,9 @@ import (
 
 // GenerateModel creates a Dart model class template with Equatable or Freezed implementation
 func GenerateModel(name string, useFreezed bool) string {
+	pascalName := utils.ToPascalCase(name)
+	snakeName := utils.ToSnakeCase(name)
+
 	if useFreezed {
 		return fmt.Sprintf(`
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -23,7 +26,7 @@ abstract class %[2]s with _$%[2]s {
 
     factory %[2]s.fromJson(Map<String, dynamic> json) => 
         _$%[2]sFromJson(json);
-}`, utils.ToSnakeCase(name), name)
+}`, snakeName, pascalName)
 	}
 
 	return fmt.Sprintf(`
@@ -38,11 +41,12 @@ class %s extends Equatable {
 
     @override
     List<Object?> get props => [id];
-}`, name, name)
+}`, pascalName, pascalName)
 }
 
 func GenerateModelTest(modelName string, useFreezed bool, projectDir string) string {
-	modelFileName := utils.ToSnakeCase(modelName)
+	pascalName := utils.ToPascalCase(modelName)
+	snakeName := utils.ToSnakeCase(modelName)
 	packageName, err := utils.GetFlutterPackageName(projectDir)
 	if err != nil {
 		packageName = "flutter_app"
@@ -50,7 +54,7 @@ func GenerateModelTest(modelName string, useFreezed bool, projectDir string) str
 
 	imports := []string{
 		"package:flutter_test/flutter_test.dart",
-		fmt.Sprintf("package:%s/models/%s.dart", packageName, modelFileName),
+		fmt.Sprintf("package:%s/models/%s.dart", packageName, snakeName),
 	}
 
 	// Common test cases for both Equatable and Freezed
@@ -58,9 +62,9 @@ func GenerateModelTest(modelName string, useFreezed bool, projectDir string) str
 		name     string
 		testCase string
 	}{
-		{"should create instance correctly", createInstanceTest(modelName)},
-		{"should support value comparison", valueEqualityTest(modelName)},
-		{"should have correct string representation", toStringTest(modelName)},
+		{"should create instance correctly", createInstanceTest(pascalName)},
+		{"should support value comparison", valueEqualityTest(pascalName)},
+		{"should have correct string representation", toStringTest(pascalName)},
 	}
 
 	// Add props test only for Equatable models
@@ -68,7 +72,7 @@ func GenerateModelTest(modelName string, useFreezed bool, projectDir string) str
 		testCases = append(testCases, struct {
 			name     string
 			testCase string
-		}{"should have correct props", propsTest(modelName)})
+		}{"should have correct props", propsTest(pascalName)})
 	}
 
 	var tests []string
@@ -84,8 +88,8 @@ func GenerateModelTest(modelName string, useFreezed bool, projectDir string) str
 			name     string
 			testCase string
 		}{
-			{"should convert to and from JSON", jsonTest(modelName)},
-			{"should support copyWith", copyWithTest(modelName)},
+			{"should convert to and from JSON", jsonTest(pascalName)},
+			{"should support copyWith", copyWithTest(pascalName)},
 		}
 
 		for _, tc := range freezedTests {

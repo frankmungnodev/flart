@@ -6,32 +6,78 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
-type dependencyType string
+type DependencyType string
 
 const (
-	regular dependencyType = "dependencies"
-	dev     dependencyType = "dev_dependencies"
+	Regular DependencyType = "dependencies"
+	Dev     DependencyType = "dev_dependencies"
 )
 
+type PubspecYaml struct {
+	Dependencies    map[string]interface{} `yaml:"dependencies"`
+	DevDependencies map[string]interface{} `yaml:"dev_dependencies"`
+}
+
 func AddDependency(dependency, projectDir string) error {
-	return addDependencyHelper(dependency, projectDir, regular)
+	return addDependencyHelper(dependency, projectDir, Regular)
 }
 
 func AddDevDependency(dependency, projectDir string) error {
-	return addDependencyHelper(dependency, projectDir, dev)
+	return addDependencyHelper(dependency, projectDir, Dev)
 }
 
-func addDependencyHelper(dependency string, projectDir string, depType dependencyType) error {
-	args := []string{"pub", "add"}
+func isDependencyExists(dependency, projectDir string, depType DependencyType) (bool, error) {
+	// Read pubspec.yaml
+	pubspecPath := filepath.Join(projectDir, "pubspec.yaml")
+	content, err := os.ReadFile(pubspecPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to read pubspec.yaml: %w", err)
+	}
 
-	if depType == dev {
+	// Parse YAML content
+	var pubspec PubspecYaml
+	if err := yaml.Unmarshal(content, &pubspec); err != nil {
+		return false, fmt.Errorf("failed to parse pubspec.yaml: %w", err)
+	}
+
+	// Check dependency existence based on type
+	switch depType {
+	case Dev:
+		_, exists := pubspec.DevDependencies[dependency]
+		return exists, nil
+	default:
+		_, exists := pubspec.Dependencies[dependency]
+		return exists, nil
+	}
+}
+
+// addDependencyHelper is a shared method to add dependencies
+func addDependencyHelper(dependency, projectDir string, depType DependencyType) error {
+	// Check if dependency already exists
+	exists, err := isDependencyExists(dependency, projectDir, depType)
+	if err != nil {
+		return fmt.Errorf("failed to check dependency existence: %w", err)
+	}
+
+	// Skip if dependency exists
+	if exists {
+		fmt.Printf("Dependency %s already exists in %s\n", dependency, depType)
+		return nil
+	}
+
+	// Prepare command arguments
+	args := []string{"pub", "add"}
+	if depType == Dev {
 		args = append(args, fmt.Sprintf("dev:%s", dependency))
 	} else {
 		args = append(args, dependency)
 	}
 
+	// Execute Flutter pub add command
 	cmd := exec.Command("flutter", args...)
 	cmd.Dir = projectDir
 	cmd.Stdout = os.Stdout
@@ -44,6 +90,7 @@ func addDependencyHelper(dependency string, projectDir string, depType dependenc
 	return nil
 }
 
+// AddFreezedDependencies adds Freezed-related dependencies to the project
 func AddFreezedDependencies(projectDir string) error {
 	// Add regular dependencies
 	if err := AddDependency("freezed_annotation", projectDir); err != nil {
@@ -66,17 +113,20 @@ func AddFreezedDependencies(projectDir string) error {
 	return nil
 }
 
+// GetFlutterPackageName retrieves the package name from pubspec.yaml
 func GetFlutterPackageName(projectDir string) (string, error) {
+	// Read pubspec.yaml
 	pubspecPath := filepath.Join(projectDir, "pubspec.yaml")
 	content, err := os.ReadFile(pubspecPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read pubspec.yaml: %w", err)
 	}
 
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(strings.TrimSpace(line), "name:") {
-			return strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "name:")), nil
+	// Parse lines to find package name
+	for _, line := range strings.Split(string(content), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "name:") {
+			return strings.TrimSpace(strings.TrimPrefix(line, "name:")), nil
 		}
 	}
 

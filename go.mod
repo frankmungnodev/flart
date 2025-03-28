@@ -4,7 +4,10 @@ go 1.23.0
 
 toolchain go1.24.0
 
-require github.com/AlecAivazis/survey/v2 v2.3.7
+require (
+	github.com/AlecAivazis/survey/v2 v2.3.7
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+)
 
 require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect

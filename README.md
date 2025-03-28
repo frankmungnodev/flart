@@ -82,7 +82,7 @@ lib/
 │       ├── cubit/
 │       │   ├── login_cubit.dart
 │       │   └── login_cubit_state.dart
-│       ├── login_screen.dart
+│       ├── login.dart
 └── test/
     ├── models/
     │   └── user_test.dart

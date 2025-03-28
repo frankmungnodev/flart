@@ -1,9 +1,8 @@
 package templates
 
 import (
+	"flart/internal/utils"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ abstract class %[2]s with _$%[2]s {
 
     factory %[2]s.fromJson(Map<String, dynamic> json) => 
         _$%[2]sFromJson(json);
-}`, strings.ToLower(name), name)
+}`, utils.ToSnakeCase(name), name)
 	}
 
 	return fmt.Sprintf(`
@@ -43,8 +42,8 @@ class %s extends Equatable {
 }
 
 func GenerateModelTest(modelName string, useFreezed bool, projectDir string) string {
-	modelFileName := strings.ToLower(modelName)
-	packageName, err := GetPackageName(projectDir)
+	modelFileName := utils.ToSnakeCase(modelName)
+	packageName, err := utils.GetFlutterPackageName(projectDir)
 	if err != nil {
 		packageName = "flutter_app"
 	}
@@ -161,21 +160,4 @@ func copyWithTest(modelName string) string {
     
     expect(copy.id, equals('2'));
     expect(model.id, equals('1'));`, modelName)
-}
-
-func GetPackageName(projectDir string) (string, error) {
-	pubspecPath := filepath.Join(projectDir, "pubspec.yaml")
-	content, err := os.ReadFile(pubspecPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read pubspec.yaml: %w", err)
-	}
-
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(strings.TrimSpace(line), "name:") {
-			return strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "name:")), nil
-		}
-	}
-
-	return "", fmt.Errorf("package name not found in pubspec.yaml")
 }

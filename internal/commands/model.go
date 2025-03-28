@@ -10,9 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func CreateModel(modelName string) error {
@@ -30,17 +27,15 @@ func CreateModel(modelName string) error {
 	// Use config's UseFreezed value, which should have a default set in the config
 	useFreezed := cfg.Models.UseFreezed != nil && *cfg.Models.UseFreezed
 
-	// Convert model name to proper case
-	caser := cases.Title(language.English)
-	modelName = caser.String(modelName)
-
 	// Prepare paths using config's project directory
 	projectDir := *cfg.ProjectDir
 	modelDir := filepath.Join(projectDir, "lib", "models")
 	testDir := filepath.Join(projectDir, "test", "models")
 
-	modelFile := filepath.Join(modelDir, strings.ToLower(modelName)+".dart")
-	testFile := filepath.Join(testDir, strings.ToLower(modelName)+"_test.dart")
+	// Convert to snake case for file names
+	snakeCase := utils.ToSnakeCase(modelName)
+	modelFile := filepath.Join(modelDir, snakeCase+".dart")
+	testFile := filepath.Join(testDir, snakeCase+"_test.dart")
 
 	// Check existing files with user confirmation
 	existingFiles := []string{}

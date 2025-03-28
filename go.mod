@@ -6,7 +6,7 @@ toolchain go1.24.0
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	golang.org/x/text v0.23.0
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
 
 require (
@@ -16,4 +16,5 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
 )

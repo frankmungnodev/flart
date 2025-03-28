@@ -10,9 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func CreateModel(modelName string) error {
@@ -29,10 +26,6 @@ func CreateModel(modelName string) error {
 
 	// Use config's UseFreezed value, which should have a default set in the config
 	useFreezed := cfg.Models.UseFreezed != nil && *cfg.Models.UseFreezed
-
-	// Convert model name to proper case
-	caser := cases.Title(language.English)
-	modelName = caser.String(modelName)
 
 	// Prepare paths using config's project directory
 	projectDir := *cfg.ProjectDir

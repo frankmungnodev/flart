@@ -8,9 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func CreateScreen(screenName string) error {
@@ -39,10 +36,6 @@ func CreateScreen(screenName string) error {
 		}
 	}
 
-	// Convert screen name to proper case for class names
-	caser := cases.Title(language.English)
-	screenName = caser.String(screenName)
-
 	// Convert to snake case for file names
 	snakeCase := utils.ToSnakeCase(screenName)
 
@@ -66,16 +59,16 @@ func CreateScreen(screenName string) error {
 	var files map[string]string
 	if *cfg.Screens.UseCubit {
 		files = map[string]string{
-			filepath.Join(screenDir, snakeCase+"_screen.dart"): templates.GenerateScreen(screenName, true),
-			filepath.Join(stateDir, snakeCase+"_cubit.dart"):   templates.GenerateCubit(screenName),
-			filepath.Join(stateDir, snakeCase+"_state.dart"):   templates.GenerateState(screenName, true, *cfg.Screens.UseFreezed),
+			filepath.Join(screenDir, snakeCase+".dart"):      templates.GenerateScreen(screenName, true),
+			filepath.Join(stateDir, snakeCase+"_cubit.dart"): templates.GenerateCubit(screenName),
+			filepath.Join(stateDir, snakeCase+"_state.dart"): templates.GenerateState(screenName, true, *cfg.Screens.UseFreezed),
 		}
 	} else {
 		files = map[string]string{
-			filepath.Join(screenDir, snakeCase+"_screen.dart"): templates.GenerateScreen(screenName, false),
-			filepath.Join(stateDir, snakeCase+"_bloc.dart"):    templates.GenerateBloc(screenName),
-			filepath.Join(stateDir, snakeCase+"_event.dart"):   templates.GenerateEvent(screenName),
-			filepath.Join(stateDir, snakeCase+"_state.dart"):   templates.GenerateState(screenName, false, *cfg.Screens.UseFreezed),
+			filepath.Join(screenDir, snakeCase+".dart"):      templates.GenerateScreen(screenName, false),
+			filepath.Join(stateDir, snakeCase+"_bloc.dart"):  templates.GenerateBloc(screenName),
+			filepath.Join(stateDir, snakeCase+"_event.dart"): templates.GenerateEvent(screenName),
+			filepath.Join(stateDir, snakeCase+"_state.dart"): templates.GenerateState(screenName, false, *cfg.Screens.UseFreezed),
 		}
 	}
 

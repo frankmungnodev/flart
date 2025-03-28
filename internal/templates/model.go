@@ -42,7 +42,7 @@ class %s extends Equatable {
 }
 
 func GenerateModelTest(modelName string, useFreezed bool, projectDir string) string {
-	modelFileName := strings.ToLower(modelName)
+	modelFileName := utils.ToSnakeCase(modelName)
 	packageName, err := utils.GetFlutterPackageName(projectDir)
 	if err != nil {
 		packageName = "flutter_app"

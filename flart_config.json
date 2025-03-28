@@ -1,7 +1,7 @@
 {
     "projectDir": "~/Projects/Mobile/Flutter/flutter_template",
     "models": {
-        "useFreezed": false
+        "useFreezed": true
     },
     "screens": {
         "useCubit": false,

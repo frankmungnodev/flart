@@ -164,7 +164,7 @@ abstract class %[2]sState with _$%[2]sState {
   const factory %[2]sState({
     @Default(false) bool isLoading,
   }) = _%[2]sState;
-}`, strings.ToLower(screenName), screenName, parentFile)
+}`, utils.ToSnakeCase(screenName), screenName, parentFile)
 	}
 
 	return fmt.Sprintf(`
